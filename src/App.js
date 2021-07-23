@@ -1,23 +1,32 @@
 import logo from './logo.svg';
 import './App.css';
+import { useState } from 'react';
+
+function ItemList({color, children}){
+  color = color ?? "blue";
+  return <li style={{color}}>{children}</li>
+}
 
 function App() {
+
+  const [miLista, setMiLista] = useState([]);
+  const [texto, setTexto] = useState("Texto inicial");
+
+  const formatList = () => miLista
+    .map(palabra => <ItemList>{palabra}</ItemList>)
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <input onChange={(evt) => setTexto(evt.target.value) } />
+      <button 
+        onClick={() => setMiLista([...miLista, texto])}
+      >
+        Agregar
+      </button>
+      <br/>
+      <ul>
+        {formatList()}
+      </ul>
     </div>
   );
 }
