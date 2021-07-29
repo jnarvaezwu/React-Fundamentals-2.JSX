@@ -1,111 +1,90 @@
 import './App.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getDepartments, getCitiesByDepartments} from "./api";
 
-function ItemList({color, children, onDelete}){
-  color = color ?? "blue";
-  return (
-    <li style={{color}}>
-      {children} 
-      <button onClick={onDelete}>
-        Eliminar
-      </button>
-    </li>
-  )
-}
 
-function ListManager({miLista, setMiLista}){
-
-  const [texto, setTexto] = useState("Texto inicial");
-
-  const handleDelete = (word) => {
-    const newList = miLista.filter(x => x !== word);
-    setMiLista(newList);
-  };
-
-  const formatList = () => miLista
-    .map((palabra, i) => (
-      <ItemList key={i} onDelete={() => handleDelete(palabra)}>
-        {palabra}
-      </ItemList>
-    ))
-
-  return (
-    <div className="list-manager">
-      <input onChange={(evt) => setTexto(evt.target.value) } />
-      <button 
-        onClick={() => setMiLista([...miLista, texto])}
-      >
-        Agregar
-      </button>
-      <br/>
-      <ul>
-        {formatList()}
-      </ul>
-    </div>
-  );
-}
-
-function LeftMenu({categories, onClick}){
-  return (
-    <div className="left-menu">
-      {
-       categories.map(category => (
-        <div 
-          onClick={() => onClick(category)} 
-          className="left-menu-item"
-        >
-          {category}
-        </div>
-       )) 
-      }
-    </div>
-  )
-}
-
-const myCategories = [
-  "Películas", 
-  "Libros", 
-  "Canciones", 
-  "Juegos",
-  "Cuentos",
-];
-
-function generateInitState(){
-  return myCategories.map(category => ({
-    name: category,
-    words: []
-  }));
-}
 
 function App() {
 
-  const [currentCategory, setCurrentCategory] = useState(myCategories[0]);
-  const [state, setState] = useState(generateInitState());
+  const [departments, setDepartments] = useState([]);
+  const [inputName, setInputName] = useState("");
+  const [selectedDep, setSelectedDep] = useState("0");
 
-  const handleSetList = (wordList) => {
-    const newState = state.map(x => {
-      if(x.name === currentCategory){
-        x.words = wordList;
-      }
-      return x;
+  const [cities, setcities] = useState([]);
+
+  const getDepartmentsEfect = () => {
+
+    let wasUnmounted = false;
+
+    getDepartments()
+    .then(response => {
+      if(wasUnmounted) return;
+      
+      setDepartments(response);
     });
-    setState(newState);
-  }
 
-  const getSelectedList = () => {
-    return state.find(x => x.name === currentCategory).words;
+    return () => {
+      wasUnmounted = true;
+    }
+  }
+  useEffect(getDepartmentsEfect, []);
+
+
+  const getCitiesEfect = () => {
+    if(selectedDep === "0"){
+      setcities([]);
+      return;
+    }
+
+    getCitiesByDepartments(selectedDep)
+      .then(cities => {
+        setcities(cities);
+        alert("Se ha llamado a cities");
+      })
+  }
+  useEffect(getCitiesEfect, [selectedDep]);
+
+  const handleSelectDepartmentChange = (evt) => {
+    setSelectedDep(evt.target.value)
+  };
+
+  const handleInputChange = (evt) => {
+    let value = evt.target.value;
+    
+    value = value.toUpperCase();
+    
+    setInputName(value);
   }
 
   return (
     <div className="App">
-      <LeftMenu 
-        onClick={category => setCurrentCategory(category)}
-        categories={myCategories} 
+      <label>Nombre:</label>
+      <input 
+        onChange={handleInputChange} 
+        value={inputName}
       />
-      <ListManager 
-        miLista={getSelectedList()} 
-        setMiLista={handleSetList} 
-      />
+      {inputName}
+      
+      <br/>
+      <br/>
+      <label>Departamento:</label>
+      <select onChange={handleSelectDepartmentChange}>
+        <option value="0" >Seleccione un departamento</option>
+        {departments.map((dep, i) => (
+          <option key={i} value={""+dep.id}>{dep.name}</option>
+        ))}
+      </select>
+
+      <br/>
+      <br/>
+      <label>Ciudad:</label>
+      <select >
+        <option value="0" >Seleccione una ciudad</option>
+        {cities.map((city, i) => (
+          <option key={i} value={""+city.id}>{city.name}</option>
+        ))}
+      </select>
+
     </div>
   );
 }
