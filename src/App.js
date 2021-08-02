@@ -1,91 +1,113 @@
+import { 
+  Button, 
+  createTheme, 
+  ThemeProvider, 
+  makeStyles, 
+  Hidden, 
+  Typography, 
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
+} from '@material-ui/core';
+
 import './App.css';
-import { useEffect, useState } from 'react';
-import { getDepartments, getCitiesByDepartments} from "./api";
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Carousel from 'react-material-ui-carousel';
 
+const myTheme = createTheme({
+  palette: {
+    primary: {
+      main: "#F0B010"
+    },
+  },
+  typography: {
+    fontFamily: "Arial"
+  },
+  overrides:{
+    MuiButton:{
+      containedPrimary:{
+        margin: "100px"
+      }
+    }
+  }
+});
 
+const useStyle = makeStyles(theme => ({
+  btnContainer: {
+    display: "flex",
+    justifyContent: "flex-start",
+    [theme.breakpoints.up("sm")]: {
+      justifyContent: "center",
+    }
+  }
+}));
 
 function App() {
 
-  const [departments, setDepartments] = useState([]);
-  const [inputName, setInputName] = useState("");
-  const [selectedDep, setSelectedDep] = useState("0");
-
-  const [cities, setcities] = useState([]);
-
-  const getDepartmentsEfect = () => {
-
-    let wasUnmounted = false;
-
-    getDepartments()
-    .then(response => {
-      if(wasUnmounted) return;
-      
-      setDepartments(response);
-    });
-
-    return () => {
-      wasUnmounted = true;
-    }
-  }
-  useEffect(getDepartmentsEfect, []);
-
-
-  const getCitiesEfect = () => {
-    if(selectedDep === "0"){
-      setcities([]);
-      return;
-    }
-
-    getCitiesByDepartments(selectedDep)
-      .then(cities => {
-        setcities(cities);
-        alert("Se ha llamado a cities");
-      })
-  }
-  useEffect(getCitiesEfect, [selectedDep]);
-
-  const handleSelectDepartmentChange = (evt) => {
-    setSelectedDep(evt.target.value)
-  };
-
-  const handleInputChange = (evt) => {
-    let value = evt.target.value;
-    
-    value = value.toUpperCase();
-    
-    setInputName(value);
-  }
+  const classes = useStyle();
 
   return (
-    <div className="App">
-      <label>Nombre:</label>
-      <input 
-        onChange={handleInputChange} 
-        value={inputName}
-      />
-      {inputName}
-      
-      <br/>
-      <br/>
-      <label>Departamento:</label>
-      <select onChange={handleSelectDepartmentChange}>
-        <option value="0" >Seleccione un departamento</option>
-        {departments.map((dep, i) => (
-          <option key={i} value={""+dep.id}>{dep.name}</option>
-        ))}
-      </select>
+    <ThemeProvider theme={myTheme}>
+      <div className="App">
 
-      <br/>
-      <br/>
-      <label>Ciudad:</label>
-      <select >
-        <option value="0" >Seleccione una ciudad</option>
-        {cities.map((city, i) => (
-          <option key={i} value={""+city.id}>{city.name}</option>
-        ))}
-      </select>
+        <Typography
+          variant="h6"
+          align="center"
+        >
+          Demostración Hidden y breakpoint
+        </Typography>
+        <div className={classes.btnContainer}>
+          <Hidden smUp>
+            <Button variant="contained" color="primary">
+              Pequeña
+            </Button>
+          </Hidden>
+          <Hidden xsDown>
+            <Button variant="contained" color="primary">
+              Grande
+            </Button>
+          </Hidden>
+        </div>
 
-    </div>
+        <Typography
+          variant="h6"
+          align="center"
+        >
+          Demostración Accordion
+        </Typography>
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <Typography className={classes.heading}>Accordion 1</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex,
+              sit amet blandit leo lobortis eget.
+            </Typography>
+          </AccordionDetails>
+      </Accordion>
+
+      <Typography
+        variant="h6"
+        align="center"
+      >
+        Demostración Carousel
+      </Typography>
+      <Carousel animation="slide" navButtonsAlwaysVisible>
+        <h1 style={{background: "#CCCCCC"}}>
+          Hola
+        </h1>
+        <h1 style={{background: "#CCCCCC"}}>
+          Mundo
+        </h1>
+      </Carousel>
+
+      </div>
+    </ThemeProvider>
   );
 }
 
